@@ -7,10 +7,12 @@ defmodule Supabase.GoTrue.UserHandler do
   alias Supabase.GoTrue.Schemas.SignInRequest
   alias Supabase.GoTrue.Schemas.SignInWithIdToken
   alias Supabase.GoTrue.Schemas.SignInWithOauth
+  alias Supabase.GoTrue.Schemas.SignInWithOTP
   alias Supabase.GoTrue.Schemas.SignInWithPassword
   alias Supabase.GoTrue.Schemas.SignInWithSSO
   alias Supabase.GoTrue.Schemas.SignUpRequest
   alias Supabase.GoTrue.Schemas.SignUpWithPassword
+  alias Supabase.GoTrue.Schemas.VerifyOTP
   alias Supabase.GoTrue.User
 
   @single_user_uri "/user"
@@ -18,6 +20,8 @@ defmodule Supabase.GoTrue.UserHandler do
   @sign_up_uri "/signup"
   @oauth_uri "/authorize"
   @sso_uri "/sso"
+  @otp_uri "/otp"
+  @verify_otp_uri "/verify"
 
   def get_user(%Client{} = client, access_token) do
     headers = Fetcher.apply_client_headers(client, access_token)
@@ -27,6 +31,39 @@ defmodule Supabase.GoTrue.UserHandler do
     |> Fetcher.get(nil, headers, resolve_json: true)
   end
 
+  def verify_otp(%Client{} = client, %{} = params) do
+    with {:ok, request} <- VerifyOTP.to_request(params),
+         headers = Fetcher.apply_client_headers(client),
+         endpoint = Client.retrieve_auth_url(client, @verify_otp_uri),
+         endpoint = append_query(endpoint, %{redirect_to: get_in(request, [:options, :redirect_to])}),
+         {:ok, response} <- Fetcher.post(endpoint, request, headers) do
+      {:ok, response["data"]["session"]}
+    end
+  end
+
+  def sign_in_with_otp(%Client{} = client, %SignInWithOTP{} = signin)
+      when client.auth.flow_type == :pkce do
+    {challenge, method} = generate_pkce()
+
+    with {:ok, request} <- SignInRequest.create(signin, challenge, method),
+         headers = Fetcher.apply_client_headers(client),
+         endpoint = Client.retrieve_auth_url(client, @otp_uri),
+         endpoint = append_query(endpoint, %{redirect_to: request.redirect_to}),
+         {:ok, response} <- Fetcher.post(endpoint, request, headers) do
+      if is_nil(signin.email), do: {:ok, response["data"]["message_id"]}, else: :ok
+    end
+  end
+
+  def sign_in_with_otp(%Client{} = client, %SignInWithOTP{} = signin) do
+    with {:ok, request} <- SignInRequest.create(signin),
+         headers = Fetcher.apply_client_headers(client),
+         endpoint = Client.retrieve_auth_url(client, @otp_uri),
+         endpoint = append_query(endpoint, %{redirect_to: request.redirect_to}),
+         {:ok, response} <- Fetcher.post(endpoint, request, headers) do
+      if is_nil(signin.email), do: {:ok, response["data"]["message_id"]}, else: :ok
+    end
+  end
+
   def sign_in_with_sso(%Client{} = client, %SignInWithSSO{} = signin)
       when client.auth.flow_type == :pkce do
     {challenge, method} = generate_pkce()
@@ -34,6 +71,7 @@ defmodule Supabase.GoTrue.UserHandler do
     with {:ok, request} <- SignInRequest.create(signin, challenge, method),
          headers = Fetcher.apply_client_headers(client),
          endpoint = Client.retrieve_auth_url(client, @sso_uri),
+         endpoint = append_query(endpoint, %{redirect_to: request.redirect_to}),
          {:ok, response} <- Fetcher.post(endpoint, request, headers) do
       {:ok, response["data"]["url"]}
     end
@@ -43,6 +81,7 @@ defmodule Supabase.GoTrue.UserHandler do
     with {:ok, request} <- SignInRequest.create(signin),
          headers = Fetcher.apply_client_headers(client),
          endpoint = Client.retrieve_auth_url(client, @sso_uri),
+         endpoint = append_query(endpoint, %{redirect_to: request.redirect_to}),
          {:ok, response} <- Fetcher.post(endpoint, request, headers) do
       {:ok, response["data"]["url"]}
     end
@@ -64,12 +103,12 @@ defmodule Supabase.GoTrue.UserHandler do
 
   defp sign_in_request(%Client{} = client, %SignInRequest{} = request, grant_type)
        when grant_type in @grant_types do
-    query = URI.encode_query(%{grant_type: grant_type})
+    query = URI.encode_query(%{grant_type: grant_type, redirect_to: request.redirect_to})
     headers = Fetcher.apply_client_headers(client)
 
     client
     |> Client.retrieve_auth_url(@sign_in_uri)
-    |> URI.append_query(query)
+    |> append_query(query)
     |> Fetcher.post(request, headers)
   end
 

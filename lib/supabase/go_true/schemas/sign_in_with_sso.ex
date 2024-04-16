@@ -3,6 +3,8 @@ defmodule Supabase.GoTrue.Schemas.SignInWithSSO do
 
   use Supabase, :schema
 
+  import Supabase.GoTrue.Validations
+
   @type options :: %__MODULE__.Options{
           redirect_to: String.t(),
           captcha_token: String.t()
@@ -58,22 +60,5 @@ defmodule Supabase.GoTrue.Schemas.SignInWithSSO do
 
   defp options_changeset(options, attrs) do
     cast(options, attrs, ~w[redirect_to captcha_token]a)
-  end
-
-  defp validate_required_inclusion(%{valid?: false} = c, _), do: c
-
-  defp validate_required_inclusion(changeset, fields) do
-    if Enum.any?(fields, &present?(changeset, &1)) do
-      changeset
-    else
-      changeset
-      |> add_error(:provider_id, "at least an provider_id or domain is required")
-      |> add_error(:domain, "at least an provider_id or domain is required")
-    end
-  end
-
-  defp present?(changeset, field) do
-    value = get_change(changeset, field)
-    value && value != ""
   end
 end
