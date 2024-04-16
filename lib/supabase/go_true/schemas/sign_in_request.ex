@@ -1,5 +1,16 @@
 defmodule Supabase.GoTrue.Schemas.SignInRequest do
-  @moduledoc false
+  @moduledoc """
+  This schema is used to validate and parse the parameters for signing in a user.
+
+  ## Fields
+
+  Fields depends on the sign in method, so check their modules to
+  see the available fields.
+  - Sign in with ID Token: `Supabase.GoTrue.Schemas.SignInWithIdToken`
+  - Sign in with OTP: `Supabase.GoTrue.Schemas.SignInWithOTP`
+  - Sign in with Password: `Supabase.GoTrue.Schemas.SignInWithPassword`
+  - Sign in with SSO: `Supabase.GoTrue.Schemas.SignInWithSSO`
+  """
 
   use Ecto.Schema
 

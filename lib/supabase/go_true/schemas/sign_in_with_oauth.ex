@@ -1,5 +1,15 @@
 defmodule Supabase.GoTrue.Schemas.SignInWithOauth do
-  @moduledoc false
+  @moduledoc """
+  This schema is used to validate and parse the parameters for signing in with OAuth.
+
+  ## Fields
+    * `provider` - The provider.
+    * `options` - The options.
+      - `redirect_to` - The redirect URL.
+      - `scopes` - The scopes.
+      - `query_params` - The query parameters.
+      - `skip_browser_redirect` - Whether to skip the browser redirect.
+  """
 
   use Supabase, :schema
 

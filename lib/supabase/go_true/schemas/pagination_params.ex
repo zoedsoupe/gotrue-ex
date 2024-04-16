@@ -1,5 +1,11 @@
 defmodule Supabase.GoTrue.Schemas.PaginationParams do
-  @moduledoc false
+  @moduledoc """
+  This schema is used to validate and parse the parameters for pagination.
+
+  ## Fields
+    * `page` - The current page.
+    * `per_page` - The number of items per page.
+  """
 
   use Ecto.Schema
 

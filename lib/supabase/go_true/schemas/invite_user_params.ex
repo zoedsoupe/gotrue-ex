@@ -1,5 +1,11 @@
 defmodule Supabase.GoTrue.Schemas.InviteUserParams do
-  @moduledoc false
+  @moduledoc """
+  This schema is used to validate and parse the parameters for inviting a new user.
+
+  ## Fields
+    * `data` - The data for the link.
+    * `redirect_to` - The redirect URL.
+  """
 
   use Supabase, :schema
 

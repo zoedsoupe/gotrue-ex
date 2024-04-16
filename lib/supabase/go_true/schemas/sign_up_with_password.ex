@@ -4,6 +4,7 @@ defmodule Supabase.GoTrue.Schemas.SignUpWithPassword do
   use Ecto.Schema
 
   import Ecto.Changeset
+  import Supabase.GoTrue.Validations
 
   @type options :: %__MODULE__.Options{
           email_redirect_to: URI.t() | nil,
@@ -48,7 +49,7 @@ defmodule Supabase.GoTrue.Schemas.SignUpWithPassword do
     |> cast(attrs, [:email, :password, :phone])
     |> cast_embed(:options, with: &options_changeset/2, required: false)
     |> maybe_put_default_options()
-    |> validate_email_or_phone()
+    |> validate_required_inclusion([:email, :phone])
     |> validate_required([:password])
   end
 
@@ -64,29 +65,6 @@ defmodule Supabase.GoTrue.Schemas.SignUpWithPassword do
 
   defp options_changeset(options, attrs) do
     cast(options, attrs, ~w[email_redirect_to data captcha_token]a)
-  end
-
-  defp validate_email_or_phone(changeset) do
-    email = get_change(changeset, :email)
-    phone = get_change(changeset, :phone)
-
-    case {email, phone} do
-      {nil, nil} ->
-        changeset
-        |> add_error(:email, "or phone can't be blank")
-        |> add_error(:phone, "or email can't be blank")
-
-      {email, nil} when is_binary(email) ->
-        changeset
-
-      {nil, phone} when is_binary(phone) ->
-        changeset
-
-      {email, phone} when is_binary(email) and is_binary(phone) ->
-        changeset
-        |> add_error(:email, "can't be given with phone")
-        |> add_error(:phone, "can't be given with email")
-    end
   end
 
   @spec parse(map) :: {:ok, t} | {:error, Ecto.Changeset.t()}

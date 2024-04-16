@@ -1,5 +1,17 @@
 defmodule Supabase.GoTrue.Session do
-  @moduledoc false
+  @moduledoc """
+  This schema is used to validate and parse the parameters for a session.
+
+  ## Fields
+    * `provider_token` - The provider token.
+    * `provider_refresh_token` - The provider refresh token.
+    * `access_token` - The access token.
+    * `refresh_token` - The refresh token.
+    * `expires_in` - The expiration time.
+    * `expires_at` - The expiration date.
+    * `token_type` - The token type.
+    * `user` - The user. Check the `Supabase.GoTrue.User` schema for more information.
+  """
 
   use Ecto.Schema
 

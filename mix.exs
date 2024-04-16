@@ -1,12 +1,12 @@
 defmodule SupabaseAuth.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
-  @source_url "https://github.com/zoedsoupe/supabase"
+  @version "0.2.1"
+  @source_url "https://github.com/zoedsoupe/gotrue-ex"
 
   def project do
     [
-      app: :supabase_auth,
+      app: :supabase_gotrue,
       version: @version,
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,

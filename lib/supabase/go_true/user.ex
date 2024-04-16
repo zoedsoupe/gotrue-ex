@@ -1,5 +1,33 @@
 defmodule Supabase.GoTrue.User do
-  @moduledoc false
+  @moduledoc """
+  This schema is used to validate and parse the parameters for a user.
+
+  ## Fields
+    * `id` - The user's ID.
+    * `app_metadata` - The metadata to associate with the user.
+    * `user_metadata` - The user's metadata.
+    * `aud` - The user's audience.
+    * `confirmation_sent_at` - The time the confirmation was sent.
+    * `recovery_sent_at` - The time the recovery was sent.
+    * `email_change_sent_at` - The time the email change was sent.
+    * `new_email` - The new email.
+    * `new_phone` - The new phone.
+    * `invited_at` - The time the user was invited.
+    * `action_link` - The action link.
+    * `email` - The user's email.
+    * `phone` - The user's phone.
+    * `created_at` - The time the user was created.
+    * `confirmed_at` - The time the user was confirmed.
+    * `email_confirmed_at` - The time the email was confirmed.
+    * `phone_confirmed_at` - The time the phone was confirmed.
+    * `last_sign_in_at` - The time the user last signed in.
+    * `last_sign_in_ip` - The user's last sign-in IP.
+    * `current_sign_in_at` - The time the user last signed in.
+    * `current_sign_in_ip` - The user's current sign-in IP.
+    * `sign_in_count` - The number of times the user has signed in.
+    * `factors` - The user's factors. Check the `Supabase.GoTrue.User.Factor` schema for more information.
+    * `identities` - The user's identities. Check the `Supabase.GoTrue.User.Identity` schema for more information.
+  """
 
   use Ecto.Schema
 

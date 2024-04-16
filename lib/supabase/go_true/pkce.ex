@@ -1,5 +1,7 @@
 defmodule Supabase.GoTrue.PKCE do
-  @moduledoc false
+  @moduledoc """
+  This module is used to generate PKCE (Proof Key for Code Exchange) values.
+  """
 
   @verifier_length 56
 

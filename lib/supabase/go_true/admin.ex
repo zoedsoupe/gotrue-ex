@@ -1,5 +1,10 @@
 defmodule Supabase.GoTrue.Admin do
-  @moduledoc false
+  @moduledoc """
+  Admin module for GoTrue. This module provides functions to interact with the GoTrue admin API,
+  like signing out a user, inviting a user, and generating a link.
+
+  You can find more information about the GoTrue admin API at https://supabase.io/docs/reference/javascript/auth-admin-api
+  """
 
   import Supabase.Client, only: [is_client: 1]
 
@@ -17,6 +22,18 @@ defmodule Supabase.GoTrue.Admin do
 
   @scopes ~w[global local others]a
 
+  @doc """
+  Signs out a user from the GoTrue admin API.
+
+  ## Parameters
+    * `client` - The `Supabase` client to use for the request.
+    * `session` - The session to sign out, often retrieved from a sign in function.
+    * `scope` - The scope to sign out the user from. Can be one of `global`, `local`, or `others`.
+
+  ## Examples
+      iex> session = %Session{access_token: "access_token"}
+      iex> Supabase.GoTrue.Admin.sign_out(pid | client_name, session, "global")
+  """
   @impl true
   def sign_out(client, %Session{} = session, scope) when is_client(client) and scope in @scopes do
     with {:ok, client} <- Client.retrieve_client(client) do
@@ -29,6 +46,17 @@ defmodule Supabase.GoTrue.Admin do
     end
   end
 
+  @doc """
+  Invites a user to the GoTrue admin API.
+
+  ## Parameters
+    * `client` - The `Supabase` client to use for the request.
+    * `email` - The email of the user to invite.
+    * `options` - The options to use for the invite. See `Supabase.GoTrue.Schemas.InviteUserParams` for more information.
+
+  ## Examples
+      iex> Supabase.GoTrue.Admin.invite_user_by_email(pid | client_name, "john@example.com", %{})
+  """
   @impl true
   def invite_user_by_email(client, email, options \\ %{}) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),
@@ -38,6 +66,16 @@ defmodule Supabase.GoTrue.Admin do
     end
   end
 
+  @doc """
+  Generates a link for the GoTrue admin API.
+
+  ## Parameters
+    * `client` - The `Supabase` client to use for the request.
+    * `attrs` - The attributes to use for the link. See `Supabase.GoTrue.Schemas.GenerateLink` for more information.
+
+  ## Examples
+      iex> Supabase.GoTrue.Admin.generate_link(pid | client_name, %{})
+  """
   @impl true
   def generate_link(client, attrs) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),
@@ -47,6 +85,16 @@ defmodule Supabase.GoTrue.Admin do
     end
   end
 
+  @doc """
+  Creates a user in the GoTrue admin API.
+
+  ## Parameters
+    * `client` - The `Supabase` client to use for the request.
+    * `attrs` - The attributes to use for the user. See `Supabase.GoTrue.Schemas.AdminUserParams` for more information.
+
+  ## Examples
+      iex> Supabase.GoTrue.Admin.create_user(pid | client_name, %{})
+  """
   @impl true
   def create_user(client, attrs) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),
@@ -56,6 +104,17 @@ defmodule Supabase.GoTrue.Admin do
     end
   end
 
+  @doc """
+  Deletes a user in the GoTrue admin API.
+
+  ## Parameters
+    * `client` - The `Supabase` client to use for the request.
+    * `user_id` - The ID of the user to delete.
+    * `opts` - Controls if the user should be soft deleted or not.
+
+  ## Examples
+      iex> Supabase.GoTrue.Admin.update_user(pid | client_name, "user_id", %{})
+  """
   @impl true
   def delete_user(client, user_id, opts \\ [should_soft_delete: false]) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),
@@ -64,6 +123,16 @@ defmodule Supabase.GoTrue.Admin do
     end
   end
 
+  @doc """
+  Gets a user by ID in the GoTrue admin API.
+
+  ## Parameters
+    * `client` - The `Supabase` client to use for the request.
+    * `user_id` - The ID of the user to get.
+
+  ## Examples
+      iex> Supabase.GoTrue.Admin.get_user_by_id(pid | client_name, "user_id")
+  """
   @impl true
   def get_user_by_id(client, user_id) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),
@@ -72,6 +141,16 @@ defmodule Supabase.GoTrue.Admin do
     end
   end
 
+  @doc """
+  Lists users in the GoTrue admin API.
+
+  ## Parameters
+    * `client` - The `Supabase` client to use for the request.
+    * `params` - The parameters to use for the list. See `Supabase.GoTrue.Schemas.PaginationParams` for more information.
+
+  ## Examples
+      iex> Supabase.GoTrue.Admin.list_users(pid | client_name, %{})
+  """
   @impl true
   def list_users(client, params \\ %{}) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),
@@ -115,6 +194,17 @@ defmodule Supabase.GoTrue.Admin do
     end)
   end
 
+  @doc """
+  Updates a user in the GoTrue admin API.
+
+  ## Parameters
+    * `client` - The `Supabase` client to use for the request.
+    * `user_id` - The ID of the user to update.
+    * `attrs` - The attributes to use for the user. See `Supabase.GoTrue.Schemas.AdminUserParams` for more information.
+
+  ## Examples
+      iex> Supabase.GoTrue.Admin.update_user(pid | client_name, "user_id", %{})
+  """
   @impl true
   def update_user_by_id(client, user_id, attrs) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),

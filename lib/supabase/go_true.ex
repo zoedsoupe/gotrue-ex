@@ -1,5 +1,14 @@
 defmodule Supabase.GoTrue do
-  @moduledoc false
+  @moduledoc """
+  This module provides the functionality to interact with the GoTrue API,
+  allowing management of users, sessions, and authentication.
+
+  It also aims to provide integrations with Plug and Phoenix LiveView applications.
+
+  For detailed information about the GoTrue API, check the official documentation at https://supabase.io/docs/reference/javascript/auth-api
+
+  And also refer to functions and submodules documentation for more information.
+  """
 
   import Supabase.Client, only: [is_client: 1]
 
@@ -18,6 +27,18 @@ defmodule Supabase.GoTrue do
 
   @behaviour Supabase.GoTrueBehaviour
 
+  @doc """
+  Get the user associated with the current session.
+
+  ## Parameters
+    - `client` - The `Supabase` client to use for the request.
+    - `session` - The session to use for the request. Check `Supabase.GoTrue.Session` for more information.
+
+  ## Examples
+      iex> session = %Supabase.GoTrue.Session{access_token: "example_token"}
+      iex> Supabase.GoTrue.get_user(pid | client_name, session)
+      {:ok, %Supabase.GoTrue.User{}}
+  """
   @impl true
   def get_user(client, %Session{} = session) do
     with {:ok, client} <- Client.retrieve_client(client),
@@ -26,6 +47,18 @@ defmodule Supabase.GoTrue do
     end
   end
 
+  @doc """
+  Signs in a user with ID token.
+
+  ## Parameters
+    - `client` - The `Supabase` client to use for the request.
+    - `credentials` - The credentials to use for the sign in. Check `Supabase.GoTrue.Schemas.SignInWithIdToken` for more information.
+
+  ## Examples
+      iex> credentials = %Supabase.GoTrue.SignInWithIdToken{}
+      iex> Supabase.GoTrue.sign_in_with_id_token(pid | client_name, credentials)
+      {:ok, %Supabase.GoTrue.User{}}
+  """
   @impl true
   def sign_in_with_id_token(client, credentials) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),
@@ -34,6 +67,18 @@ defmodule Supabase.GoTrue do
     end
   end
 
+  @doc """
+  Signs in a user with OAuth.
+
+  ## Parameters
+    - `client` - The `Supabase` client to use for the request.
+    - `credentials` - The credentials to use for the sign in. Check `Supabase.GoTrue.Schemas.SignInWithOauth` for more information.
+
+  ## Examples
+      iex> credentials = %Supabase.GoTrue.SignInWithOauth{}
+      iex> Supabase.GoTrue.sign_in_with_oauth(pid | client_name, credentials)
+      {:ok, atom, URI.t()}
+  """
   @impl true
   def sign_in_with_oauth(client, credentials) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),
@@ -43,6 +88,18 @@ defmodule Supabase.GoTrue do
     end
   end
 
+  @doc """
+  Signs in a user with OTP.
+
+  ## Parameters
+    - `client` - The `Supabase` client to use for the request.
+    - `credentials` - The credentials to use for the sign in. Check `Supabase.GoTrue.Schemas.SignInWithOTP` for more information.
+
+  ## Examples
+      iex> credentials = %Supabase.GoTrue.SignInWithOTP{}
+      iex> Supabase.GoTrue.sign_in_with_otp(pid | client_name, credentials)
+      {:ok, %Supabase.GoTrue.Session{}}
+  """
   @impl true
   def sign_in_with_otp(client, credentials) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),
@@ -51,6 +108,18 @@ defmodule Supabase.GoTrue do
     end
   end
 
+  @doc """
+  Verifies an OTP code.
+
+  ## Parameters
+    - `client` - The `Supabase` client to use for the request.
+    - `params` - The parameters to use for the verification. Check `Supabase.GoTrue.Schemas.VerifyOTP` for more information.
+
+  ## Examples
+      iex> params = %Supabase.GoTrue.VerifyOTP{}
+      iex> Supabase.GoTrue.verify_otp(pid | client_name, params)
+      {:ok, %Supabase.GoTrue.Session{}}
+  """
   @impl true
   def verify_otp(client, params) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),
@@ -59,6 +128,18 @@ defmodule Supabase.GoTrue do
     end
   end
 
+  @doc """
+  Signs in a user with SSO.
+
+  ## Parameters
+    - `client` - The `Supabase` client to use for the request.
+    - `credentials` - The credentials to use for the sign in. Check `Supabase.GoTrue.Schemas.SignInWithSSO` for more information.
+
+  ## Examples
+      iex> credentials = %Supabase.GoTrue.SignInWithSSO{}
+      iex> Supabase.GoTrue.sign_in_with_sso(pid | client_name, credentials)
+      {:ok, %Supabase.GoTrue.User{}}
+  """
   @impl true
   def sign_in_with_sso(client, credentials) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),
@@ -67,6 +148,18 @@ defmodule Supabase.GoTrue do
     end
   end
 
+  @doc """
+  Signs in a user with email/phone and password.
+
+  ## Parameters
+    - `client` - The `Supabase` client to use for the request.
+    - `credentials` - The credentials to use for the sign in. Check `Supabase.GoTrue.Schemas.SignInWithPassword` for more information.
+
+  ## Examples
+      iex> credentials = %Supabase.GoTrue.SignInWithPassword{}
+      iex> Supabase.GoTrue.sign_in_with_password(pid | client_name, credentials)
+      {:ok, %Supabase.GoTrue.Session{}}
+  """
   @impl true
   def sign_in_with_password(client, credentials) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),
@@ -76,6 +169,18 @@ defmodule Supabase.GoTrue do
     end
   end
 
+  @doc """
+  Signs up a user with email/phone and password.
+
+  ## Parameters
+    - `client` - The `Supabase` client to use for the request.
+    - `credentials` - The credentials to use for the sign up. Check `Supabase.GoTrue.Schemas.SignUpWithPassword` for more information.
+
+  ## Examples
+      iex> credentials = %Supabase.GoTrue.SignUpWithPassword{}
+      iex> Supabase.GoTrue.sign_up(pid | client_name, credentials)
+      {:ok, %Supabase.GoTrue.User{}}
+  """
   @impl true
   def sign_up(client, credentials) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),

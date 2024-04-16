@@ -1,5 +1,17 @@
 defmodule Supabase.GoTrue.Schemas.SignUpRequest do
-  @moduledoc false
+  @moduledoc """
+  This schema is used to validate and parse the parameters for signing up a new user.
+
+  ## Fields
+    * `email` - The user's email.
+    * `phone` - The user's phone.
+    * `password` - The user's password.
+    * `data` - The user's data.
+    * `code_challenge` - The user's code challenge.
+    * `code_challenge_method` - The user's code challenge method.
+    * `gotrue_meta_security` - The user's gotrue meta security.
+      - `captcha_token` - The user's captcha token.
+  """
 
   use Ecto.Schema
 

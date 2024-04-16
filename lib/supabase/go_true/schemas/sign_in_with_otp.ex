@@ -1,5 +1,16 @@
 defmodule Supabase.GoTrue.Schemas.SignInWithOTP do
-  @moduledoc false
+  @moduledoc """
+  This schema is used to validate and parse the parameters for signing in with OTP.
+
+  ## Fields
+    * `email` - The user's email.
+    * `phone` - The user's phone.
+    * `options` - The options for signing in with OTP.
+      - `data` - The data for the sign in.
+      - `email_redirect_to` - The redirect URL for the email.
+      - `captcha_token` - The captcha token.
+      - `channel` - The channel for the OTP.
+  """
 
   use Supabase, :schema
 

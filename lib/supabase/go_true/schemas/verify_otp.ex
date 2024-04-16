@@ -1,5 +1,32 @@
 defmodule Supabase.GoTrue.Schemas.VerifyOTP do
-  @moduledoc false
+  @moduledoc """
+  This schema is used to validate and parse the parameters for verifying an OTP.
+
+  ## Fields
+
+  ### Mobile OTP
+    * `phone` - The user's phone number.
+    * `token` - The OTP token.
+    * `type` - The type of OTP.
+    * `options` - The options for the OTP.
+      - `redirect_to` - The redirect URL.
+      - `captcha_token` - The captcha token.
+
+  ### Email OTP
+    * `email` - The user's email.
+    * `token` - The OTP token.
+    * `type` - The type of OTP.
+    * `options` - The options for the OTP.
+      - `redirect_to` - The redirect URL.
+      - `captcha_token` - The captcha token.
+
+  ### Token Hash
+    * `token_hash` - The token hash.
+    * `type` - The type of OTP.
+    * `options` - The options for the OTP.
+      - `redirect_to` - The redirect URL.
+      - `captcha_token` - The captcha token.
+  """
 
   use Supabase, :schema
 

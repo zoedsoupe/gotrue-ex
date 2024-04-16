@@ -1,5 +1,15 @@
 defmodule Supabase.GoTrue.User.Factor do
-  @moduledoc false
+  @moduledoc """
+  This schema is used to validate and parse the parameters for a user factor.
+
+  ## Fields
+    * `friendly_name` - The friendly name of the factor.
+    * `factor_type` - The type of factor.
+    * `status` - The status of the factor.
+    * `created_at` - The creation date of the factor.
+    * `updated_at` - The last update date of the factor.
+    * `id` - The factor's ID.
+  """
 
   use Ecto.Schema
 

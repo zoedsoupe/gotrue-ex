@@ -29,7 +29,7 @@ defmodule Supabase.GoTrue.Plug do
     |> configure_session(renew: true)
   end
 
-  def sig_in(%Conn{} = conn, client, attrs) when is_client(client) do
+  def sign_in(%Conn{} = conn, client, attrs) when is_client(client) do
     case maybe_sign_in(conn, client, attrs) do
       {:ok, session} -> put_session_token(conn, session.access_token)
       _ -> conn

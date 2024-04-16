@@ -1,5 +1,15 @@
 defmodule Supabase.GoTrue.Schemas.SignInWithPassword do
-  @moduledoc false
+  @moduledoc """
+  This schema is used to validate and parse the parameters for signing in with a password.
+
+  ## Fields
+    * `email` - The user's email.
+    * `phone` - The user's phone.
+    * `password` - The user's password.
+    * `options` - The options for the sign in.
+      - `data` - The data for the sign in.
+      - `captcha_token` - The captcha token.
+  """
 
   use Ecto.Schema
 

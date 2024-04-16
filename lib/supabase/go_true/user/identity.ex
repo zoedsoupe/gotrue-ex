@@ -1,5 +1,16 @@
 defmodule Supabase.GoTrue.User.Identity do
-  @moduledoc false
+  @moduledoc """
+  This schema is used to validate and parse the identity of a user.
+
+  ## Fields
+    * `id` - The user's ID.
+    * `user_id` - The user's ID.
+    * `provider` - The user's provider.
+    * `created_at` - The user's creation date.
+    * `updated_at` - The user's last update date.
+    * `identity_data` - The user's identity data.
+    * `last_sign_in_at` - The user's last sign-in date.
+  """
 
   use Ecto.Schema
 

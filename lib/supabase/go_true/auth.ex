@@ -1,5 +1,7 @@
 defmodule Supabase.GoTrue.Auth do
-  @moduledoc false
+  @moduledoc """
+  This module contains the authentication logic for Supabase GoTrue.
+  """
 
   use Ecto.Schema
 

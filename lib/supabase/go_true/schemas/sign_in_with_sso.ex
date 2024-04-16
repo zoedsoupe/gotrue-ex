@@ -1,5 +1,14 @@
 defmodule Supabase.GoTrue.Schemas.SignInWithSSO do
-  @moduledoc false
+  @moduledoc """
+  This schema is used to validate and parse the parameters for signing in with SSO.
+
+  ## Fields
+    * `provider_id` - The provider ID.
+    * `domain` - The domain.
+    * `options` - The options.
+      - `redirect_to` - The redirect URL.
+      - `captcha_token` - The captcha token.
+  """
 
   use Supabase, :schema
 

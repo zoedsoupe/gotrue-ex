@@ -1,5 +1,15 @@
 defmodule Supabase.GoTrue.Schemas.SignInWithIdToken do
-  @moduledoc false
+  @moduledoc """
+  This schema is used to validate and parse the parameters for signing in with an ID token.
+
+  ## Fields
+    * `provider` - The provider.
+    * `token` - The token.
+    * `access_token` - The access token.
+    * `nonce` - The nonce.
+    * `options` - The options.
+      - `captcha_token` - The captcha token.
+  """
 
   use Supabase, :schema
 
