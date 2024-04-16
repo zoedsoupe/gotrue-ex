@@ -7,6 +7,7 @@ defmodule Supabase.GoTrue.Schemas.SignInRequest do
 
   alias Supabase.GoTrue.Schemas.SignInWithIdToken
   alias Supabase.GoTrue.Schemas.SignInWithPassword
+  alias Supabase.GoTrue.Schemas.SignInWithSSO
 
   @derive Jason.Encoder
   @primary_key false
@@ -18,11 +19,37 @@ defmodule Supabase.GoTrue.Schemas.SignInRequest do
     field(:access_token, :string)
     field(:nonce, :string)
     field(:id_token, :string)
+    field :provider_id, :string
+    field :domain, :string
+    field(:code_challenge, :string)
+    field(:code_challenge_method, :string)
 
     embeds_one :gotrue_meta_security, GoTrueMetaSecurity, primary_key: false do
       @derive Jason.Encoder
       field(:captcha_token, :string)
     end
+  end
+
+  def create(%SignInWithSSO{} = signin, code_challenge, code_method) do
+    attrs = SignInWithSSO.to_sign_in_params(signin, code_challenge, code_method)
+    gotrue_meta = %__MODULE__.GoTrueMetaSecurity{captcha_token: signin.options.captcha_token}
+
+    %__MODULE__{}
+    |> cast(attrs, [:provider_id, :domain])
+    |> put_embed(:gotrue_meta_security, gotrue_meta, required: true)
+    |> validate_required_inclusion([:provider, :domain])
+    |> apply_action(:insert)
+  end
+
+  def create(%SignInWithSSO{} = signin) do
+    attrs = SignInWithSSO.to_sign_in_params(signin)
+    gotrue_meta = %__MODULE__.GoTrueMetaSecurity{captcha_token: signin.options.captcha_token}
+
+    %__MODULE__{}
+    |> cast(attrs, [:provider_id, :domain])
+    |> put_embed(:gotrue_meta_security, gotrue_meta, required: true)
+    |> validate_required_inclusion([:provider, :domain])
+    |> apply_action(:insert)
   end
 
   def create(%SignInWithIdToken{} = signin) do

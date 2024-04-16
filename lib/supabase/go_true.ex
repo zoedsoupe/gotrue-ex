@@ -7,6 +7,7 @@ defmodule Supabase.GoTrue do
   alias Supabase.GoTrue.Schemas.SignInWithIdToken
   alias Supabase.GoTrue.Schemas.SignInWithOauth
   alias Supabase.GoTrue.Schemas.SignInWithPassword
+  alias Supabase.GoTrue.Schemas.SignInWithSSO
   alias Supabase.GoTrue.Schemas.SignUpWithPassword
   alias Supabase.GoTrue.Session
   alias Supabase.GoTrue.User
@@ -38,6 +39,14 @@ defmodule Supabase.GoTrue do
          {:ok, credentials} <- SignInWithOauth.parse(credentials) do
       url = UserHandler.get_url_for_provider(client, credentials)
       {:ok, credentials.provider, url}
+    end
+  end
+
+  @impl true
+  def sign_in_with_sso(client, credentials) when is_client(client) do
+    with {:ok, client} <- Client.retrieve_client(client),
+         {:ok, credentials} <- SignInWithSSO.parse(credentials) do
+      UserHandler.sign_in_with_sso(client, credentials)
     end
   end
 

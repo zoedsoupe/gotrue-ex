@@ -24,8 +24,9 @@ defmodule Supabase.GoTrue.User.Identity do
   @optional_fields ~w[identity_data last_sign_in_at created_at updated_at user_id]a
 
   @derive Jason.Encoder
-  @primary_key {:id, :binary_id, autogenerate: false}
+  @primary_key false
   embedded_schema do
+    field(:id, :binary_id)
     field(:identity_data, :map)
     field(:provider, Ecto.Enum, values: @providers)
     field(:last_sign_in_at, :naive_datetime)

@@ -8,6 +8,7 @@ defmodule Supabase.GoTrue.UserHandler do
   alias Supabase.GoTrue.Schemas.SignInWithIdToken
   alias Supabase.GoTrue.Schemas.SignInWithOauth
   alias Supabase.GoTrue.Schemas.SignInWithPassword
+  alias Supabase.GoTrue.Schemas.SignInWithSSO
   alias Supabase.GoTrue.Schemas.SignUpRequest
   alias Supabase.GoTrue.Schemas.SignUpWithPassword
   alias Supabase.GoTrue.User
@@ -26,10 +27,11 @@ defmodule Supabase.GoTrue.UserHandler do
     |> Fetcher.get(nil, headers, resolve_json: true)
   end
 
-  def sign_in_with_sso(%Client{} = client, %{} = signin) when client.auth.flow_type == :pkce do
+  def sign_in_with_sso(%Client{} = client, %SignInWithSSO{} = signin)
+      when client.auth.flow_type == :pkce do
     {challenge, method} = generate_pkce()
 
-    with {:ok, request} <- %{},
+    with {:ok, request} <- SignInRequest.create(signin, challenge, method),
          headers = Fetcher.apply_client_headers(client),
          endpoint = Client.retrieve_auth_url(client, @sso_uri),
          {:ok, response} <- Fetcher.post(endpoint, request, headers) do
@@ -37,8 +39,8 @@ defmodule Supabase.GoTrue.UserHandler do
     end
   end
 
-  def sign_in_with_sso(%Client{} = client, %{} = signin) do
-    with {:ok, request} <- %{},
+  def sign_in_with_sso(%Client{} = client, %SignInWithSSO{} = signin) do
+    with {:ok, request} <- SignInRequest.create(signin),
          headers = Fetcher.apply_client_headers(client),
          endpoint = Client.retrieve_auth_url(client, @sso_uri),
          {:ok, response} <- Fetcher.post(endpoint, request, headers) do
