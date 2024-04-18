@@ -208,7 +208,7 @@ defmodule Supabase.GoTrue.Admin do
   @impl true
   def update_user_by_id(client, user_id, attrs) when is_client(client) do
     with {:ok, client} <- Client.retrieve_client(client),
-         {:ok, params} <- AdminUserParams.parse(attrs),
+         {:ok, params} <- AdminUserParams.parse_update(attrs),
          {:ok, response} <- AdminHandler.update_user(client, user_id, params) do
       User.parse(response)
     end

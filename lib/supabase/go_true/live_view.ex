@@ -35,8 +35,10 @@ defmodule Supabase.GoTrue.LiveView do
   alias Supabase.GoTrue.User
 
   @client Application.compile_env!(:supabase_gotrue, :authentication_client)
-  @endpoint Application.compile_env!(:supabase_gotrue, :endpoint)
   @signed_in_path Application.compile_env(:supabase_gotrue, :signed_in_path)
+
+  # just to ensure config:
+  Application.compile_env!(:supabase_gotrue, :endpoint)
 
   @doc """
   Logs out the user from the session and broadcasts a disconnect event.
@@ -55,7 +57,8 @@ defmodule Supabase.GoTrue.LiveView do
     user_token = socket.assigns[:user_token]
     session = %Session{access_token: user_token}
     user_token && Admin.sign_out(@client, session, scope)
-    @endpoint.broadcast_from(self(), socket.id, "disconnect", %{user: user})
+    endpoint = Application.fetch_env!(:supabase_gotrue, :endpoint)
+    endpoint.broadcast_from(self(), socket.id, "disconnect", %{user: user})
   end
 
   @doc """

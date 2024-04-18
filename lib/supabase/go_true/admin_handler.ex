@@ -68,16 +68,17 @@ defmodule Supabase.GoTrue.AdminHandler do
   end
 
   def list_users(%Client{} = client, params) do
-    body = %{
-      page: to_string(Map.get(params, :page, 0)),
-      per_page: to_string(Map.get(params, :per_page, 0))
+    query = URI.encode_query %{
+      page: to_string(Map.get(params, :page, 1)),
+      per_page: to_string(Map.get(params, :per_page, nil))
     }
 
     headers = Fetcher.apply_client_headers(client)
 
     client
     |> Client.retrieve_auth_url(@users)
-    |> Fetcher.get(body, headers, resolve_json: false)
+    |> URI.append_query(query)
+    |> Fetcher.get(nil, headers, resolve_json: false)
     |> case do
       {:ok, resp} when resp.status == 200 -> {:ok, Map.update!(resp, :body, &Jason.decode!/1)}
       {:ok, resp} -> {:ok, Fetcher.format_response(resp)}

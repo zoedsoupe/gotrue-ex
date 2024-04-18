@@ -14,8 +14,8 @@ defmodule Supabase.GoTrue.Plug do
   You can set up these config in your `config.exs`:
   ```
   config :supabase_gotrue,
-    endpoint: YourApp.Endpoint,
     signed_in_path: "/dashboard",
+    not_authenticated_path: "/login",
     authentication_client: :my_supabase_potion_client_name
   ```
 
@@ -45,7 +45,36 @@ defmodule Supabase.GoTrue.Plug do
   For more information on how Supabase login with email and password works, check `Supabase.GoTrue.sign_in_with_password/2`
   """
   def log_in_with_password(conn, params \\ %{}) do
-    {:ok, session} = GoTrue.sign_in_with_password(@client, params)
+    with {:ok, session} <- GoTrue.sign_in_with_password(@client, params) do
+      do_login(conn, session, params)
+    end
+  end
+
+  def log_in_with_id_token(conn, params \\ %{}) do
+    with {:ok, session} <- GoTrue.sign_in_with_id_token(@client, params) do
+      do_login(conn, session, params)
+    end
+  end
+
+  def log_in_with_oauth(conn, params \\ %{}) do
+    with {:ok, session} <- GoTrue.sign_in_with_oauth(@client, params) do
+      do_login(conn, session, params)
+    end
+  end
+
+  def log_in_with_sso(conn, params \\ %{}) do
+    with {:ok, session} <- GoTrue.sign_in_with_sso(@client, params) do
+      do_login(conn, session, params)
+    end
+  end
+
+  def log_in_with_otp(conn, params \\ %{}) do
+    with {:ok, session} <- GoTrue.sign_in_with_otp(@client, params) do
+      do_login(conn, session, params)
+    end
+  end
+
+  defp do_login(conn, session, params) do
     user_return_to = get_session(conn, :user_return_to)
 
     conn
@@ -78,6 +107,13 @@ defmodule Supabase.GoTrue.Plug do
     user_token = get_session(conn, :user_token)
     session = %Session{access_token: user_token}
     user_token && Admin.sign_out(@client, session, scope)
+
+live_socket_id = get_session(conn, :live_socket_id)
+    endpoint = Application.get_env(:supabase_gotrue, :endpoint)
+
+   if live_socket_id && endpoint do
+      endpoint.broadcast(live_socket_id, "disconnect", %{})
+    end
 
     conn
     |> renew_session()

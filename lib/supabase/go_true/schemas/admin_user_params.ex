@@ -35,4 +35,10 @@ defmodule Supabase.GoTrue.Schemas.AdminUserParams do
     |> validate_required_inclusion([:email, :phone])
     |> apply_action(:parse)
   end
+
+  def parse_update(attrs) do
+    {%{}, @types}
+    |> cast(attrs, Map.keys(@types))
+    |> apply_action(:parse)
+  end
 end
