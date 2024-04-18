@@ -29,6 +29,7 @@ defmodule SupabaseAuth.MixProject do
     [
       {:plug, "~> 1.15"},
       {:supabase_potion, "~> 0.3"},
+      {:phoenix_live_view, "~> 0.20"},
       {:ex_doc, ">= 0.0.0", runtime: false}
     ]
   end

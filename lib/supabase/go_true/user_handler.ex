@@ -103,12 +103,11 @@ defmodule Supabase.GoTrue.UserHandler do
 
   defp sign_in_request(%Client{} = client, %SignInRequest{} = request, grant_type)
        when grant_type in @grant_types do
-    query = URI.encode_query(%{grant_type: grant_type, redirect_to: request.redirect_to})
     headers = Fetcher.apply_client_headers(client)
 
     client
     |> Client.retrieve_auth_url(@sign_in_uri)
-    |> append_query(query)
+    |> append_query(%{grant_type: grant_type, redirect_to: request.redirect_to})
     |> Fetcher.post(request, headers)
   end
 
