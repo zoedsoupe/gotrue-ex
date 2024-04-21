@@ -258,6 +258,11 @@ defmodule Supabase.GoTrue do
           opts = [name: unquote(client), client_info: config]
           Supabase.Client.start_link(opts)
         end
+        |> then(fn
+          {:ok, pid} -> {:ok, pid}
+          {:error, {:already_started, pid}} -> {:ok, pid}
+          err -> err
+        end)
       end
 
       unquote(gotrue_functions)
