@@ -188,4 +188,85 @@ defmodule Supabase.GoTrue do
       UserHandler.sign_up(client, credentials)
     end
   end
+
+  defmacrop wrap_gotrue_functions(module) do
+    quote unquote: false, bind_quoted: [module: module] do
+            for {fun, arity} <- module.__info__(:functions) do
+        if arity == 1 do
+          quote do
+            @doc """
+            Check `Supabase.GoTrue.#{unquote(fun)}/#{unquote(arity)}`
+            """
+            def unquote(fun)() do
+              apply(unquote(module), unquote(fun), [@client])
+            end
+          end
+        else
+          args = for idx <- 2..arity, do: Macro.var(:"arg#{idx}", module)
+
+          quote do
+            @doc """
+            Check `Supabase.GoTrue.#{unquote(fun)}/#{unquote(arity)}`
+            """
+            def unquote(fun)(unquote_splicing(args)) do
+              args = [unquote_splicing(args)]
+              apply(unquote(module), unquote(fun), [@client | args])
+            end
+          end
+        end
+      end
+    end
+  end
+
+  defmacro __using__([{:client, client} | opts]) do
+    config = Macro.escape(Keyword.get(opts, :config, %{}))
+
+    gotrue_functions = wrap_gotrue_functions(Supabase.GoTrue)
+    gotrue_admin_functions = wrap_gotrue_functions(Supabase.GoTrue.Admin)
+
+    quote location: :keep do
+      @client unquote(client)
+
+      def child_spec(opts) do
+        %{
+          id: __MODULE__,
+          start: {__MODULE__, :start_link, [opts]},
+          type: :supervisor
+        }
+      end
+
+      def start_link(opts \\ []) do
+        manage_clients? = Application.get_env(:supabase_potion, :manage_clients, true)
+
+        if manage_clients? do
+          Supabase.init_client(unquote(client), unquote(config))
+        else
+
+          base_url =
+            Application.get_env(:supabase_potion, :supabase_base_url) ||
+              raise Supabase.MissingSupabaseConfig, :url
+
+          api_key =
+            Application.get_env(:supabase_potion, :supabase_api_key) ||
+              raise Supabase.MissingSupabaseConfig, :key
+
+          config =
+            unquote(config)
+            |> Map.put(:conn, %{base_url: base_url, api_key: api_key})
+            |> Map.put(:name, unquote(client))
+
+          opts = [name: unquote(client), client_info: config]
+          Supabase.Client.start_link(opts)
+        end
+      end
+
+      unquote(gotrue_functions)
+
+      defmodule Admin do
+        @client unquote(client)
+
+        unquote(gotrue_admin_functions)
+      end
+    end
+  end
 end
