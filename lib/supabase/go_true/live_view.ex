@@ -36,6 +36,7 @@ defmodule Supabase.GoTrue.LiveView do
 
   @client Application.compile_env!(:supabase_gotrue, :authentication_client)
   @signed_in_path Application.compile_env(:supabase_gotrue, :signed_in_path)
+  @not_authenticated_path Application.compile_env(:supabase_gotrue, :not_authenticated_path, "/")
 
   # just to ensure config:
   Application.compile_env!(:supabase_gotrue, :endpoint)
@@ -98,7 +99,7 @@ defmodule Supabase.GoTrue.LiveView do
     if socket.assigns.current_user do
       {:cont, socket}
     else
-      {:halt, Phoenix.LiveView.redirect(socket, to: @signed_in_path)}
+      {:halt, Phoenix.LiveView.redirect(socket, to: @not_authenticated_path)}
     end
   end
 
