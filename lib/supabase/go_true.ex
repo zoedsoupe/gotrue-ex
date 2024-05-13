@@ -19,6 +19,7 @@ defmodule Supabase.GoTrue do
   alias Supabase.GoTrue.Schemas.SignInWithPassword
   alias Supabase.GoTrue.Schemas.SignInWithSSO
   alias Supabase.GoTrue.Schemas.SignUpWithPassword
+  alias Supabase.GoTrue.Schemas.UserParams
   alias Supabase.GoTrue.Session
   alias Supabase.GoTrue.User
   alias Supabase.GoTrue.UserHandler
@@ -186,6 +187,54 @@ defmodule Supabase.GoTrue do
     with {:ok, client} <- Client.retrieve_client(client),
          {:ok, credentials} <- SignUpWithPassword.parse(credentials) do
       UserHandler.sign_up(client, credentials)
+    end
+  end
+
+  @doc """
+  Sends a recovery password email for the given email address.
+
+  ## Parameters
+    - `client` - The `Supabase` client to use for the request.
+    - `email` - A valid user email address to recover password
+    - `opts`:
+      - `redirect_to`: the url where the user should be redirected to reset their password
+      - `captcha_token`
+
+  ## Examples
+    iex> Supabase.GoTrue.reset_password_for_email(client, "john@example.com", redirect_to: "http://localohst:4000/reset-pass")
+    :ok
+  """
+  @spec reset_password_for_email(Client.client(), String.t, opts) :: :ok | {:error, term}
+    when opts: [redirect_to: String.t] | [captcha_token: String.t] | [redirect_to: String.t, captcha_token: String.t]
+  def reset_password_for_email(client, email, opts) when is_client(client) do
+    with {:ok, client} <- Client.retrieve_client(client) do
+      UserHandler.recover_password(client, email, Map.new(opts))
+    end
+  end
+
+  @doc """
+  Updates the current logged in user.
+
+  ## Parameters
+    - `client` - The `Supabase` client to use for the request.
+    - `conn` - The current `Plug.Conn` or `Phoenix.LiveView.Socket` to get current user
+    - `attrs` - Check `UserParams`
+  
+  ## Examples
+    iex> params = %{email: "another@example.com", password: "new-pass"}
+    iex> Supabase.GoTrue.update_user(client, conn, params)
+    {:ok, conn}
+  """
+  @spec update_user(Client.client, conn, UserParams.t) :: {:ok, conn} | {:error, term}
+        when conn: Plug.Conn.t | Phoenix.LiveView.Socket.t
+  def update_user(client, conn, attrs) when is_client(client) do
+    with {:ok, client} <- Client.retrieve_client(client),
+         {:ok, params} <- UserParams.parse(attrs) do
+        if conn.assigns.current_user do
+          UserHandler.update_user(client, conn, params)
+        else
+          {:error, :no_user_logged_in}
+        end
     end
   end
 

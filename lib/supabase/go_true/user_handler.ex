@@ -3,6 +3,8 @@ defmodule Supabase.GoTrue.UserHandler do
 
   alias Supabase.Client
   alias Supabase.Fetcher
+  alias Supabase.GoTrue
+  alias Supabase.GoTrue.LiveView
   alias Supabase.GoTrue.PKCE
   alias Supabase.GoTrue.Schemas.SignInRequest
   alias Supabase.GoTrue.Schemas.SignInWithIdToken
@@ -22,6 +24,7 @@ defmodule Supabase.GoTrue.UserHandler do
   @sso_uri "/sso"
   @otp_uri "/otp"
   @verify_otp_uri "/verify"
+  @reset_pass_uri "/recover"
 
   def get_user(%Client{} = client, access_token) do
     headers = Fetcher.apply_client_headers(client, access_token)
@@ -35,9 +38,8 @@ defmodule Supabase.GoTrue.UserHandler do
     with {:ok, request} <- VerifyOTP.to_request(params),
          headers = Fetcher.apply_client_headers(client),
          endpoint = Client.retrieve_auth_url(client, @verify_otp_uri),
-         endpoint = append_query(endpoint, %{redirect_to: get_in(request, [:options, :redirect_to])}),
-         {:ok, response} <- Fetcher.post(endpoint, request, headers) do
-      {:ok, response["data"]["session"]}
+         endpoint = append_query(endpoint, %{redirect_to: get_in(request, [:options, :redirect_to])}) do
+      Fetcher.post(endpoint, request, headers, resolve_json: true)
     end
   end
 
@@ -49,7 +51,7 @@ defmodule Supabase.GoTrue.UserHandler do
          headers = Fetcher.apply_client_headers(client),
          endpoint = Client.retrieve_auth_url(client, @otp_uri),
          endpoint = append_query(endpoint, %{redirect_to: request.redirect_to}),
-         {:ok, response} <- Fetcher.post(endpoint, request, headers) do
+         {:ok, response} <- Fetcher.post(endpoint, request, headers, resolve_json: true) do
       if is_nil(signin.email), do: {:ok, response["data"]["message_id"]}, else: :ok
     end
   end
@@ -59,7 +61,7 @@ defmodule Supabase.GoTrue.UserHandler do
          headers = Fetcher.apply_client_headers(client),
          endpoint = Client.retrieve_auth_url(client, @otp_uri),
          endpoint = append_query(endpoint, %{redirect_to: request.redirect_to}),
-         {:ok, response} <- Fetcher.post(endpoint, request, headers) do
+         {:ok, response} <- Fetcher.post(endpoint, request, headers, resolve_json: true) do
       if is_nil(signin.email), do: {:ok, response["data"]["message_id"]}, else: :ok
     end
   end
@@ -72,7 +74,7 @@ defmodule Supabase.GoTrue.UserHandler do
          headers = Fetcher.apply_client_headers(client),
          endpoint = Client.retrieve_auth_url(client, @sso_uri),
          endpoint = append_query(endpoint, %{redirect_to: request.redirect_to}),
-         {:ok, response} <- Fetcher.post(endpoint, request, headers) do
+         {:ok, response} <- Fetcher.post(endpoint, request, headers, resolve_json: true) do
       {:ok, response["data"]["url"]}
     end
   end
@@ -82,7 +84,7 @@ defmodule Supabase.GoTrue.UserHandler do
          headers = Fetcher.apply_client_headers(client),
          endpoint = Client.retrieve_auth_url(client, @sso_uri),
          endpoint = append_query(endpoint, %{redirect_to: request.redirect_to}),
-         {:ok, response} <- Fetcher.post(endpoint, request, headers) do
+         {:ok, response} <- Fetcher.post(endpoint, request, headers, resolve_json: true) do
       {:ok, response["data"]["url"]}
     end
   end
@@ -108,7 +110,7 @@ defmodule Supabase.GoTrue.UserHandler do
     client
     |> Client.retrieve_auth_url(@sign_in_uri)
     |> append_query(%{grant_type: grant_type, redirect_to: request.redirect_to})
-    |> Fetcher.post(request, headers)
+    |> Fetcher.post(request, headers, resolve_json: true)
   end
 
   def sign_up(%Client{} = client, %SignUpWithPassword{} = signup)
@@ -118,7 +120,7 @@ defmodule Supabase.GoTrue.UserHandler do
     with {:ok, request} <- SignUpRequest.create(signup, challenge, method),
          headers = Fetcher.apply_client_headers(client),
          endpoint = Client.retrieve_auth_url(client, @sign_up_uri),
-         {:ok, response} <- Fetcher.post(endpoint, request, headers),
+         {:ok, response} <- Fetcher.post(endpoint, request, headers, resolve_json: true),
          {:ok, user} <- User.parse(response) do
       {:ok, user, challenge}
     end
@@ -128,8 +130,87 @@ defmodule Supabase.GoTrue.UserHandler do
     with {:ok, request} <- SignUpRequest.create(signup),
          headers = Fetcher.apply_client_headers(client),
          endpoint = Client.retrieve_auth_url(client, @sign_up_uri),
-         {:ok, response} <- Fetcher.post(endpoint, request, headers) do
+         {:ok, response} <- Fetcher.post(endpoint, request, headers, resolve_json: true) do
       User.parse(response)
+    end
+  end
+
+  def recover_password(%Client{} = client, email, %{} = opts)
+   when client.auth.flow_type == :pkce do
+    {challenge, method} = generate_pkce()
+
+    body = %{
+      email: email,
+      code_challenge: challenge,
+      code_challenge_method: method,
+      go_true_meta_security: %{captcha_token: opts[:captcha_token]}
+    }
+
+    headers = Fetcher.apply_client_headers(client)
+    endpoint = Client.retrieve_auth_url(client, @reset_pass_uri)
+    endpoint = append_query(endpoint, %{redirect_to: opts[:redirect_to]})
+
+    with {:ok, _} <- Fetcher.post(endpoint, body, headers) do
+      :ok
+    end
+  end
+
+  def recover_password(%Client{} = client, email, %{} = opts) do
+    body = %{
+      email: email,
+      go_true_meta_security: %{captcha_token: opts[:captcha_token]}
+    }
+
+    headers = Fetcher.apply_client_headers(client)
+    endpoint = Client.retrieve_auth_url(client, @reset_pass_uri)
+    endpoint = append_query(endpoint, %{redirect_to: opts[:redirect_to]})
+
+    with {:ok, _} <- Fetcher.post(endpoint, body, headers) do
+      :ok
+    end
+  end
+
+  def update_user(%Client{} = client, conn, %{} = params)
+    when client.auth.flow_type == :pkce do
+    {challenge, method} = generate_pkce()
+
+    access_token =  case conn do
+      %Plug.Conn{} -> Plug.Conn.get_session(conn, :user_token)
+      %Phoenix.LiveView.Socket{} -> conn.assigns.user_token
+    end
+
+    body = Map.merge(params, %{code_challenge: challenge, code_challenge_method: method})
+    headers = Fetcher.apply_client_headers(client, access_token)
+    endpoint = Client.retrieve_auth_url(client, @single_user_uri)
+    endpoint = append_query(endpoint, %{redirect_to: params[:email_redirect_to]})
+
+    session = %{"user_token" => access_token}
+
+    with {:ok, _} <- Fetcher.put(endpoint, body, headers) do
+      case conn do
+        %Plug.Conn{} -> {:ok, GoTrue.Plug.fetch_current_user(conn, nil)}
+        %Phoenix.LiveView.Socket{} -> {:ok, LiveView.mount_current_user(session, conn)}
+      end
+    end
+  end
+
+  def update_user(%Client{} = client, conn, %{} = params) do
+    access_token =  case conn do
+      %Plug.Conn{} -> Plug.Conn.get_session(conn, :user_token)
+      %Phoenix.LiveView.Socket{} -> conn.assigns.user_token
+    end
+
+    headers = Fetcher.apply_client_headers(client, access_token)
+    endpoint = Client.retrieve_auth_url(client, @single_user_uri)
+    endpoint = append_query(endpoint, %{redirect_to: params[:email_redirect_to]})
+
+    session = %{"user_token" => access_token}
+
+    with {:ok, _} <- Fetcher.put(endpoint, params, headers) do
+      case conn do
+        %Plug.Conn{} -> {:ok, GoTrue.Plug.fetch_current_user(conn, nil)}
+        %Phoenix.LiveView.Socket{} -> {:ok, LiveView.mount_current_user(session, conn)}
+      end
     end
   end
 

@@ -77,6 +77,8 @@ defmodule Supabase.GoTrue.Plug do
   defp do_login(conn, session, params) do
     user_return_to = get_session(conn, :user_return_to)
 
+    :ok = Supabase.Client.update_access_token(@client, session.access_token)
+
     conn
     |> renew_session()
     |> put_token_in_session(session.access_token)
@@ -108,7 +110,7 @@ defmodule Supabase.GoTrue.Plug do
     session = %Session{access_token: user_token}
     user_token && Admin.sign_out(@client, session, scope)
 
-live_socket_id = get_session(conn, :live_socket_id)
+    live_socket_id = get_session(conn, :live_socket_id)
     endpoint = Application.get_env(:supabase_gotrue, :endpoint)
 
    if live_socket_id && endpoint do
@@ -214,7 +216,7 @@ live_socket_id = get_session(conn, :live_socket_id)
 
   defp maybe_store_return_to(conn), do: conn
 
-  defp put_token_in_session(conn, token) do
+  def put_token_in_session(conn, token) do
     base64_token = Base.url_encode64(token)
 
     conn

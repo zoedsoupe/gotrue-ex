@@ -82,6 +82,7 @@ defmodule Supabase.GoTrue.User do
     field(:email_confirmed_at, :naive_datetime)
     field(:phone_confirmed_at, :naive_datetime)
     field(:last_sign_in_at, :naive_datetime)
+    field :encrypted_password, :string
     field(:role, :string)
 
     embeds_many(:factors, Supabase.GoTrue.User.Factor)
