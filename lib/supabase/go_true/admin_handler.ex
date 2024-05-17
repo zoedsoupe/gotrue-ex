@@ -20,7 +20,7 @@ defmodule Supabase.GoTrue.AdminHandler do
   def sign_out(%Client{} = client, access_token, scope) do
     endpoint = Client.retrieve_auth_url(client, sign_out(scope))
     headers = Fetcher.apply_client_headers(client, access_token)
-    Fetcher.post(endpoint, nil, headers)
+    Fetcher.post(endpoint, nil, headers, resolve_json: true)
   end
 
   def invite_user(%Client{} = client, email, %InviteUserParams{} = opts) do
@@ -29,7 +29,7 @@ defmodule Supabase.GoTrue.AdminHandler do
 
     client
     |> Client.retrieve_auth_url(@invite)
-    |> Fetcher.post(body, headers)
+    |> Fetcher.post(body, headers, resolve_json: true)
   end
 
   def generate_link(%Client{} = client, %{type: _, redirect_to: redirect_to} = params) do
@@ -37,7 +37,7 @@ defmodule Supabase.GoTrue.AdminHandler do
 
     client
     |> Client.retrieve_auth_url(@generate_link)
-    |> Fetcher.post(params, headers)
+    |> Fetcher.post(params, headers, resolve_json: true)
   end
 
   def create_user(%Client{} = client, params) do
@@ -45,7 +45,7 @@ defmodule Supabase.GoTrue.AdminHandler do
 
     client
     |> Client.retrieve_auth_url(@users)
-    |> Fetcher.post(params, headers)
+    |> Fetcher.post(params, headers, resolve_json: true)
   end
 
   def delete_user(%Client{} = client, id, params) do
@@ -55,7 +55,7 @@ defmodule Supabase.GoTrue.AdminHandler do
 
     client
     |> Client.retrieve_auth_url(uri)
-    |> Fetcher.delete(body, headers)
+    |> Fetcher.delete(body, headers, resolve_json: true)
   end
 
   def get_user(%Client{} = client, id) do
@@ -64,7 +64,7 @@ defmodule Supabase.GoTrue.AdminHandler do
 
     client
     |> Client.retrieve_auth_url(uri)
-    |> Fetcher.delete(nil, headers)
+    |> Fetcher.get(nil, headers, resolve_json: true)
   end
 
   def list_users(%Client{} = client, params) do
@@ -92,6 +92,6 @@ defmodule Supabase.GoTrue.AdminHandler do
 
     client
     |> Client.retrieve_auth_url(uri)
-    |> Fetcher.put(params, headers)
+    |> Fetcher.put(params, headers, resolve_json: true)
   end
 end
