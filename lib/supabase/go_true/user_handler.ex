@@ -25,6 +25,7 @@ defmodule Supabase.GoTrue.UserHandler do
   @otp_uri "/otp"
   @verify_otp_uri "/verify"
   @reset_pass_uri "/recover"
+  @resend_signup_uri "/resend"
 
   def get_user(%Client{} = client, access_token) do
     headers = Fetcher.apply_client_headers(client, access_token)
@@ -166,6 +167,22 @@ defmodule Supabase.GoTrue.UserHandler do
     endpoint = append_query(endpoint, %{redirect_to: opts[:redirect_to]})
 
     with {:ok, _} <- Fetcher.post(endpoint, body, headers) do
+      :ok
+    end
+  end
+
+  def resend_signup(%Client{} = client, email, %{} = opts) do
+    body = %{
+      email: email,
+      type: opts.type,
+      go_true_meta_security: %{captcha_token: opts[:captcha_token]}
+    }
+
+    headers = Fetcher.apply_client_headers(client)
+    endpoint = Client.retrieve_auth_url(client, @resend_signup_uri)
+    endpoint = append_query(endpoint, %{redirect_to: opts[:redirect_to]})
+
+    with {:ok, _} <- Fetcher.post(endpoint, body, headers) |> IO.inspect() do
       :ok
     end
   end

@@ -213,6 +213,28 @@ defmodule Supabase.GoTrue do
   end
 
   @doc """
+  Resends a signuo confirm email for the given email address.
+
+  ## Parameters
+    - `client` - The `Supabase` client to use for the request.
+    - `email` - A valid user email address to recover password
+    - `opts`:
+      - `redirect_to`: the url where the user should be redirected to reset their password
+      - `captcha_token`
+
+  ## Examples
+    iex> Supabase.GoTrue.resend(client, "john@example.com", redirect_to: "http://localohst:4000/reset-pass")
+    :ok
+  """
+  @spec resend(Client.client(), String.t, opts) :: :ok | {:error, term}
+    when opts: [redirect_to: String.t] | [captcha_token: String.t] | [redirect_to: String.t, captcha_token: String.t]
+  def resend(client, email, opts) when is_client(client) do
+    with {:ok, client} <- Client.retrieve_client(client) do
+      UserHandler.resend_signup(client, email, Map.new(opts))
+    end
+  end
+
+  @doc """
   Updates the current logged in user.
 
   ## Parameters
