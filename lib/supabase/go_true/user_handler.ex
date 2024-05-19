@@ -182,7 +182,7 @@ defmodule Supabase.GoTrue.UserHandler do
     endpoint = Client.retrieve_auth_url(client, @resend_signup_uri)
     endpoint = append_query(endpoint, %{redirect_to: opts[:redirect_to]})
 
-    with {:ok, _} <- Fetcher.post(endpoint, body, headers) |> IO.inspect() do
+    with {:ok, _} <- Fetcher.post(endpoint, body, headers) do
       :ok
     end
   end

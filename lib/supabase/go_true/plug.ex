@@ -119,7 +119,7 @@ defmodule Supabase.GoTrue.Plug do
 
     conn
     |> renew_session()
-    |> redirect(to: @not_authenticated_path )
+    |> redirect(to: @not_authenticated_path)
   end
 
 

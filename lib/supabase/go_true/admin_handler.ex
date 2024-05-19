@@ -24,7 +24,7 @@ defmodule Supabase.GoTrue.AdminHandler do
   end
 
   def invite_user(%Client{} = client, email, %InviteUserParams{} = opts) do
-    headers = Fetcher.apply_client_headers(client, nil, %{"redirect_to" => opts.redirect_to})
+    headers = Fetcher.apply_client_headers(client, client.conn.api_key, %{"redirect_to" => opts.redirect_to})
     body = %{email: email, data: opts.data}
 
     client
@@ -33,7 +33,7 @@ defmodule Supabase.GoTrue.AdminHandler do
   end
 
   def generate_link(%Client{} = client, %{type: _, redirect_to: redirect_to} = params) do
-    headers = Fetcher.apply_client_headers(client, nil, %{"redirect_to" => redirect_to})
+    headers = Fetcher.apply_client_headers(client, client.conn.api_key, %{"redirect_to" => redirect_to})
 
     client
     |> Client.retrieve_auth_url(@generate_link)
@@ -41,7 +41,7 @@ defmodule Supabase.GoTrue.AdminHandler do
   end
 
   def create_user(%Client{} = client, params) do
-    headers = Fetcher.apply_client_headers(client)
+    headers = Fetcher.apply_client_headers(client, client.conn.api_key)
 
     client
     |> Client.retrieve_auth_url(@users)
@@ -49,7 +49,7 @@ defmodule Supabase.GoTrue.AdminHandler do
   end
 
   def delete_user(%Client{} = client, id, params) do
-    headers = Fetcher.apply_client_headers(client)
+    headers = Fetcher.apply_client_headers(client, client.conn.api_key)
     body = %{should_soft_delete: params[:should_soft_delete] || false}
     uri = single_user_endpoint(id)
 
@@ -59,7 +59,7 @@ defmodule Supabase.GoTrue.AdminHandler do
   end
 
   def get_user(%Client{} = client, id) do
-    headers = Fetcher.apply_client_headers(client)
+    headers = Fetcher.apply_client_headers(client, client.conn.api_key)
     uri = single_user_endpoint(id)
 
     client
@@ -73,7 +73,7 @@ defmodule Supabase.GoTrue.AdminHandler do
       per_page: to_string(Map.get(params, :per_page, nil))
     }
 
-    headers = Fetcher.apply_client_headers(client)
+    headers = Fetcher.apply_client_headers(client, client.conn.api_key)
 
     client
     |> Client.retrieve_auth_url(@users)
@@ -87,7 +87,7 @@ defmodule Supabase.GoTrue.AdminHandler do
   end
 
   def update_user(%Client{} = client, id, params) do
-    headers = Fetcher.apply_client_headers(client)
+    headers = Fetcher.apply_client_headers(client, client.conn.api_key)
     uri = single_user_endpoint(id)
 
     client
