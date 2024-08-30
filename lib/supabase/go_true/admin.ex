@@ -6,8 +6,6 @@ defmodule Supabase.GoTrue.Admin do
   You can find more information about the GoTrue admin API at https://supabase.io/docs/reference/javascript/auth-admin-api
   """
 
-  import Supabase.Client, only: [is_client: 1]
-
   alias Supabase.Client
   alias Supabase.Fetcher
   alias Supabase.GoTrue.AdminHandler
@@ -35,15 +33,13 @@ defmodule Supabase.GoTrue.Admin do
       iex> Supabase.GoTrue.Admin.sign_out(pid | client_name, session, "global")
   """
   @impl true
-  def sign_out(client, %Session{} = session, scope) when is_client(client) and scope in @scopes do
-    with {:ok, client} <- Client.retrieve_client(client) do
+  def sign_out(%Client{} = client, %Session{} = session, scope) when scope in @scopes do
       case AdminHandler.sign_out(client, session.access_token, scope) do
         {:ok, _} -> :ok
         {:error, :not_found} -> :ok
         {:error, :unauthorized} -> :ok
         err -> err
       end
-    end
   end
 
   @doc """
@@ -58,9 +54,8 @@ defmodule Supabase.GoTrue.Admin do
       iex> Supabase.GoTrue.Admin.invite_user_by_email(pid | client_name, "john@example.com", %{})
   """
   @impl true
-  def invite_user_by_email(client, email, options \\ %{}) when is_client(client) do
-    with {:ok, client} <- Client.retrieve_client(client),
-         {:ok, options} <- InviteUserParams.parse(options),
+  def invite_user_by_email(%Client{} = client, email, options \\ %{}) do
+    with {:ok, options} <- InviteUserParams.parse(options),
          {:ok, response} <- AdminHandler.invite_user(client, email, options) do
       User.parse(response)
     end
@@ -77,9 +72,8 @@ defmodule Supabase.GoTrue.Admin do
       iex> Supabase.GoTrue.Admin.generate_link(pid | client_name, %{})
   """
   @impl true
-  def generate_link(client, attrs) when is_client(client) do
-    with {:ok, client} <- Client.retrieve_client(client),
-         {:ok, params} <- GenerateLink.parse(attrs),
+  def generate_link(%Client{} = client, attrs) do
+    with {:ok, params} <- GenerateLink.parse(attrs),
          {:ok, response} <- AdminHandler.generate_link(client, params) do
       GenerateLink.properties(response)
     end
@@ -96,9 +90,8 @@ defmodule Supabase.GoTrue.Admin do
       iex> Supabase.GoTrue.Admin.create_user(pid | client_name, %{})
   """
   @impl true
-  def create_user(client, attrs) when is_client(client) do
-    with {:ok, client} <- Client.retrieve_client(client),
-         {:ok, params} <- AdminUserParams.parse(attrs),
+  def create_user(%Client{} = client, attrs) do
+    with {:ok, params} <- AdminUserParams.parse(attrs),
          {:ok, response} <- AdminHandler.create_user(client, params) do
       User.parse(response)
     end
@@ -116,9 +109,8 @@ defmodule Supabase.GoTrue.Admin do
       iex> Supabase.GoTrue.Admin.update_user(pid | client_name, "user_id", %{})
   """
   @impl true
-  def delete_user(client, user_id, opts \\ [should_soft_delete: false]) when is_client(client) do
-    with {:ok, client} <- Client.retrieve_client(client),
-         {:ok, _} <- AdminHandler.delete_user(client, user_id, opts) do
+  def delete_user(%Client{} = client, user_id, opts \\ [should_soft_delete: false]) do
+    with {:ok, _} <- AdminHandler.delete_user(client, user_id, opts) do
       :ok
     end
   end
@@ -134,9 +126,8 @@ defmodule Supabase.GoTrue.Admin do
       iex> Supabase.GoTrue.Admin.get_user_by_id(pid | client_name, "user_id")
   """
   @impl true
-  def get_user_by_id(client, user_id) when is_client(client) do
-    with {:ok, client} <- Client.retrieve_client(client),
-         {:ok, response} <- AdminHandler.get_user(client, user_id) do
+  def get_user_by_id(%Client{} = client, user_id) do
+    with {:ok, response} <- AdminHandler.get_user(client, user_id) do
       User.parse(response)
     end
   end
@@ -152,9 +143,8 @@ defmodule Supabase.GoTrue.Admin do
       iex> Supabase.GoTrue.Admin.list_users(pid | client_name, %{})
   """
   @impl true
-  def list_users(client, params \\ %{}) when is_client(client) do
-    with {:ok, client} <- Client.retrieve_client(client),
-         {:ok, params} <- PaginationParams.page_params(params),
+  def list_users(%Client{} = client, params \\ %{}) do
+    with {:ok, params} <- PaginationParams.page_params(params),
          {:ok, response} <- AdminHandler.list_users(client, params),
          {:ok, users} <- User.parse_list(response.body["users"]) do
       total = Fetcher.get_header(response, "x-total-count")
@@ -206,9 +196,8 @@ defmodule Supabase.GoTrue.Admin do
       iex> Supabase.GoTrue.Admin.update_user(pid | client_name, "user_id", %{})
   """
   @impl true
-  def update_user_by_id(client, user_id, attrs) when is_client(client) do
-    with {:ok, client} <- Client.retrieve_client(client),
-         {:ok, params} <- AdminUserParams.parse_update(attrs),
+  def update_user_by_id(%Client{} = client, user_id, attrs) do
+    with {:ok, params} <- AdminUserParams.parse_update(attrs),
          {:ok, response} <- AdminHandler.update_user(client, user_id, params) do
       User.parse(response)
     end

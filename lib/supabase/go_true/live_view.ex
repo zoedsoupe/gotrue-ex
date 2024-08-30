@@ -119,15 +119,19 @@ defmodule Supabase.GoTrue.LiveView do
         socket
         |> assign_new(:current_user, fn ->
           session = %Session{access_token: user_token}
-          case GoTrue.get_user(@client, session) do
-            {:ok, %User{} = user} -> user
-            _ -> nil
-          end
+          maybe_get_current_user(session)
         end)
         |> assign_new(:user_token, fn -> user_token end)
 
       %{} ->
         assign_new(socket, :current_user, fn -> nil end)
     end
+  end
+
+  defp maybe_get_current_user(session) do
+          case GoTrue.get_user(@client, session) do
+            {:ok, %User{} = user} -> user
+            _ -> nil
+          end
   end
 end

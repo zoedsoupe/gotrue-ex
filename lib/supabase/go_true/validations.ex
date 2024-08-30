@@ -1,4 +1,6 @@
 defmodule Supabase.GoTrue.Validations do
+  @moduledoc false
+
   import Ecto.Changeset
 
   @spec validate_required_inclusion(changeset :: Ecto.Changeset.t(), fields :: [atom()]) :: Ecto.Changeset.t()

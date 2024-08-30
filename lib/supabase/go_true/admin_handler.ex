@@ -77,6 +77,7 @@ defmodule Supabase.GoTrue.AdminHandler do
 
     client
     |> Client.retrieve_auth_url(@users)
+    |> URI.new!()
     |> URI.append_query(query)
     |> Fetcher.get(nil, headers, resolve_json: false)
     |> case do

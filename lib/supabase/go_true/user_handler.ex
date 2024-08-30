@@ -36,10 +36,10 @@ defmodule Supabase.GoTrue.UserHandler do
   end
 
   def verify_otp(%Client{} = client, %{} = params) do
-    with {:ok, request} <- VerifyOTP.to_request(params),
-         headers = Fetcher.apply_client_headers(client),
-         endpoint = Client.retrieve_auth_url(client, @verify_otp_uri),
-         endpoint = append_query(endpoint, %{redirect_to: get_in(request, [:options, :redirect_to])}) do
+    with {:ok, request} <- VerifyOTP.to_request(params) do
+      headers = Fetcher.apply_client_headers(client)
+      endpoint = Client.retrieve_auth_url(client, @verify_otp_uri)
+      endpoint = append_query(endpoint, %{redirect_to: get_in(request, [:options, :redirect_to])})
       Fetcher.post(endpoint, request, headers, resolve_json: true)
     end
   end
@@ -137,7 +137,7 @@ defmodule Supabase.GoTrue.UserHandler do
   end
 
   def recover_password(%Client{} = client, email, %{} = opts)
-   when client.auth.flow_type == :pkce do
+      when client.auth.flow_type == :pkce do
     {challenge, method} = generate_pkce()
 
     body = %{
@@ -188,13 +188,14 @@ defmodule Supabase.GoTrue.UserHandler do
   end
 
   def update_user(%Client{} = client, conn, %{} = params)
-    when client.auth.flow_type == :pkce do
+      when client.auth.flow_type == :pkce do
     {challenge, method} = generate_pkce()
 
-    access_token =  case conn do
-      %Plug.Conn{} -> Plug.Conn.get_session(conn, :user_token)
-      %Phoenix.LiveView.Socket{} -> conn.assigns.user_token
-    end
+    access_token =
+      case conn do
+        %Plug.Conn{} -> Plug.Conn.get_session(conn, :user_token)
+        %Phoenix.LiveView.Socket{} -> conn.assigns.user_token
+      end
 
     body = Map.merge(params, %{code_challenge: challenge, code_challenge_method: method})
     headers = Fetcher.apply_client_headers(client, access_token)
@@ -212,10 +213,11 @@ defmodule Supabase.GoTrue.UserHandler do
   end
 
   def update_user(%Client{} = client, conn, %{} = params) do
-    access_token =  case conn do
-      %Plug.Conn{} -> Plug.Conn.get_session(conn, :user_token)
-      %Phoenix.LiveView.Socket{} -> conn.assigns.user_token
-    end
+    access_token =
+      case conn do
+        %Plug.Conn{} -> Plug.Conn.get_session(conn, :user_token)
+        %Phoenix.LiveView.Socket{} -> conn.assigns.user_token
+      end
 
     headers = Fetcher.apply_client_headers(client, access_token)
     endpoint = Client.retrieve_auth_url(client, @single_user_uri)
@@ -254,6 +256,10 @@ defmodule Supabase.GoTrue.UserHandler do
     query = Map.filter(query, &(not is_nil(elem(&1, 1))))
     encoded = URI.encode_query(query)
     URI.append_query(uri, encoded)
+  end
+
+  defp append_query(uri, query) when is_binary(uri) do
+    append_query(URI.new!(uri), query)
   end
 
   defp generate_pkce do

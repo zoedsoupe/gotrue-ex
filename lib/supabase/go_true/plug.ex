@@ -122,7 +122,6 @@ defmodule Supabase.GoTrue.Plug do
     |> redirect(to: @not_authenticated_path)
   end
 
-
   @doc """
   Retrieves the current user from the session or a signed cookie, assigning it to the connection's assigns.
 

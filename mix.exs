@@ -1,7 +1,7 @@
 defmodule SupabaseAuth.MixProject do
   use Mix.Project
 
-  @version "0.3.7"
+  @version "0.3.8"
   @source_url "https://github.com/zoedsoupe/gotrue-ex"
 
   def project do
@@ -28,9 +28,11 @@ defmodule SupabaseAuth.MixProject do
   defp deps do
     [
       {:plug, "~> 1.15"},
-      {:supabase_potion, "~> 0.3"},
+      {:supabase_potion, "~> 0.4"},
       {:phoenix_live_view, "~> 0.20"},
-      {:ex_doc, ">= 0.0.0", runtime: false}
+      {:ex_doc, ">= 0.0.0", runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.3", only: [:dev], runtime: false}
     ]
   end
 
