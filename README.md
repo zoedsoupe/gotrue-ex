@@ -28,7 +28,7 @@ Now you can pass the Client to the `Supabase.GoTrue` functions as a `PID` or the
 iex> Supabase.GoTrue.sign_in_with_password(pid | client_name, %{} = params)
 ```
 
-This implementation also exposes an `Supaabse.GoTrue.Admin` function to interact with users with super powers:
+This implementation also exposes an `Supabase.GoTrue.Admin` function to interact with users with super powers:
 ```elixir
 iex> Supabase.GoTrue.Admin.create_user(pid | client_name, %{} = params)
 ```
