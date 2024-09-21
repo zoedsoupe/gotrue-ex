@@ -1,7 +1,7 @@
 defmodule SupabaseAuth.MixProject do
   use Mix.Project
 
-  @version "0.3.8"
+  @version "0.3.9"
   @source_url "https://github.com/zoedsoupe/gotrue-ex"
 
   def project do
@@ -27,9 +27,9 @@ defmodule SupabaseAuth.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:plug, "~> 1.15"},
       {:supabase_potion, "~> 0.4"},
-      {:phoenix_live_view, "~> 0.20"},
+      {:plug, "~> 1.15", optional: true},
+      {:phoenix_live_view, "~> 0.20", optional: true},
       {:ex_doc, ">= 0.0.0", runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false}
@@ -42,7 +42,7 @@ defmodule SupabaseAuth.MixProject do
       contributors: ["zoedsoupe"],
       links: %{
         "GitHub" => @source_url,
-        "Docs" => "https://hexdocs.pm/supabase_auth"
+        "Docs" => "https://hexdocs.pm/supabase_gotrue"
       },
       files: ~w[lib mix.exs README.md LICENSE]
     }

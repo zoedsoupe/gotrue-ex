@@ -242,4 +242,14 @@ defmodule Supabase.GoTrue do
         end
     end
   end
+
+  @doc """
+  Retrieves the auth module handle from the application configuration.
+  Check https://hexdocs.pm/supabase_gotrue/readme.html#usage
+  """
+  def get_auth_module! do
+
+    Application.get_env(:supabase_gotrue, :auth_module) ||
+                     raise(Supabase.GoTrue.MissingConfig, key: :auth_module)
+  end
 end

@@ -3,8 +3,6 @@ defmodule Supabase.GoTrue.UserHandler do
 
   alias Supabase.Client
   alias Supabase.Fetcher
-  alias Supabase.GoTrue
-  alias Supabase.GoTrue.LiveView
   alias Supabase.GoTrue.PKCE
   alias Supabase.GoTrue.Schemas.SignInRequest
   alias Supabase.GoTrue.Schemas.SignInWithIdToken
@@ -203,11 +201,15 @@ defmodule Supabase.GoTrue.UserHandler do
     endpoint = append_query(endpoint, %{redirect_to: params[:email_redirect_to]})
 
     session = %{"user_token" => access_token}
+    auth_module = Supabase.GoTrue.get_auth_module!()
 
     with {:ok, _} <- Fetcher.put(endpoint, body, headers) do
       case conn do
-        %Plug.Conn{} -> {:ok, GoTrue.Plug.fetch_current_user(conn, nil)}
-        %Phoenix.LiveView.Socket{} -> {:ok, LiveView.mount_current_user(session, conn)}
+        %Plug.Conn{} ->
+          {:ok, apply(auth_module, :fetch_current_user, [conn, nil])}
+
+        %Phoenix.LiveView.Socket{} ->
+          {:ok, apply(auth_module, :mount_current_user, [session, conn])}
       end
     end
   end
@@ -224,11 +226,15 @@ defmodule Supabase.GoTrue.UserHandler do
     endpoint = append_query(endpoint, %{redirect_to: params[:email_redirect_to]})
 
     session = %{"user_token" => access_token}
+    auth_module = Supabase.GoTrue.get_auth_module!()
 
     with {:ok, _} <- Fetcher.put(endpoint, params, headers) do
       case conn do
-        %Plug.Conn{} -> {:ok, GoTrue.Plug.fetch_current_user(conn, nil)}
-        %Phoenix.LiveView.Socket{} -> {:ok, LiveView.mount_current_user(session, conn)}
+        %Plug.Conn{} ->
+          {:ok, apply(auth_module, :fetch_current_user, [conn, nil])}
+
+        %Phoenix.LiveView.Socket{} ->
+          {:ok, apply(auth_module, :mount_current_user, [session, conn])}
       end
     end
   end
