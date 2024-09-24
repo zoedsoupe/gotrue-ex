@@ -31,7 +31,8 @@ if Code.ensure_loaded?(Phoenix.LiveView) do
     """
 
     defmacro __using__(opts) do
-      Supabase.GoTrue.MissingConfig.ensure_opts!(opts, __CALLER__.module)
+      module = __CALLER__.module
+      Supabase.GoTrue.MissingConfig.ensure_opts!(opts, module)
 
       client = opts[:client]
       signed_in_path = opts[:signed_in_path]
@@ -46,6 +47,11 @@ if Code.ensure_loaded?(Phoenix.LiveView) do
         alias Supabase.GoTrue.Admin
         alias Supabase.GoTrue.Session
         alias Supabase.GoTrue.User
+
+        Code.ensure_loaded!(unquote(client))
+        if not function_exported?(unquote(client), :get_client, 0) do
+          raise Supabase.GoTrue.MissingConfig, key: :client, module: unquote(module)
+        end
 
         @client unquote(client)
         @signed_in_path unquote(signed_in_path)
@@ -67,7 +73,8 @@ if Code.ensure_loaded?(Phoenix.LiveView) do
           user = socket.assigns.current_user
           user_token = socket.assigns[:user_token]
           session = %Session{access_token: user_token}
-          user_token && Admin.sign_out(@client, session, scope)
+          {:ok, client} = @client.get_client()
+          user_token && Admin.sign_out(client, session, scope)
           # avoid compilation warnings
           apply(unquote(endpoint), :broadcast_from, [
             self(),
@@ -105,6 +112,7 @@ if Code.ensure_loaded?(Phoenix.LiveView) do
             end
         """
         def on_mount(:mount_current_user, _params, session, socket) do
+          IO.inspect(session, label: "SESSION")
           {:cont, mount_current_user(session, socket)}
         end
 
@@ -144,7 +152,9 @@ if Code.ensure_loaded?(Phoenix.LiveView) do
         end
 
         defp maybe_get_current_user(session) do
-          case GoTrue.get_user(@client, session) do
+          {:ok, client} = @client.get_client()
+
+          case GoTrue.get_user(client, session) do
             {:ok, %User{} = user} -> user
             _ -> nil
           end

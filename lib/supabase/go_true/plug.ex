@@ -19,7 +19,8 @@ if Code.ensure_loaded?(Plug) do
     """
 
     defmacro __using__(opts) do
-      Supabase.GoTrue.MissingConfig.ensure_opts!(opts, __CALLER__.module)
+      module = __CALLER__.module
+      Supabase.GoTrue.MissingConfig.ensure_opts!(opts, module)
 
       client = opts[:client]
       signed_in_path = opts[:signed_in_path]
@@ -37,6 +38,11 @@ if Code.ensure_loaded?(Plug) do
         alias Supabase.GoTrue.Session
         alias Supabase.GoTrue.User
 
+        Code.ensure_loaded!(unquote(client))
+        if not function_exported?(unquote(client), :get_client, 0) do
+          raise Supabase.GoTrue.MissingConfig, key: :client, module: unquote(module)
+        end
+
         @client unquote(client)
         @signed_in_path unquote(signed_in_path)
         @not_authenticated_path unquote(not_authenticated_path)
@@ -49,39 +55,49 @@ if Code.ensure_loaded?(Plug) do
         For more information on how Supabase login with email and password works, check `Supabase.GoTrue.sign_in_with_password/2`
         """
         def log_in_with_password(conn, params \\ %{}) do
-          with {:ok, session} <- GoTrue.sign_in_with_password(@client, params) do
-            do_login(conn, session, params)
+          {:ok, client} = @client.get_client()
+
+          with {:ok, session} <- GoTrue.sign_in_with_password(client, params) do
+            do_login(client, conn, session, params)
           end
         end
 
         def log_in_with_id_token(conn, params \\ %{}) do
-          with {:ok, session} <- GoTrue.sign_in_with_id_token(@client, params) do
-            do_login(conn, session, params)
+          {:ok, client} = @client.get_client()
+
+          with {:ok, session} <- GoTrue.sign_in_with_id_token(client, params) do
+            do_login(client, conn, session, params)
           end
         end
 
         def log_in_with_oauth(conn, params \\ %{}) do
-          with {:ok, session} <- GoTrue.sign_in_with_oauth(@client, params) do
-            do_login(conn, session, params)
+          {:ok, client} = @client.get_client()
+
+          with {:ok, session} <- GoTrue.sign_in_with_oauth(client, params) do
+            do_login(client, conn, session, params)
           end
         end
 
         def log_in_with_sso(conn, params \\ %{}) do
-          with {:ok, session} <- GoTrue.sign_in_with_sso(@client, params) do
-            do_login(conn, session, params)
+          {:ok, client} = @client.get_client()
+
+          with {:ok, session} <- GoTrue.sign_in_with_sso(client, params) do
+            do_login(client, conn, session, params)
           end
         end
 
         def log_in_with_otp(conn, params \\ %{}) do
-          with {:ok, session} <- GoTrue.sign_in_with_otp(@client, params) do
-            do_login(conn, session, params)
+          {:ok, client} = @client.get_client()
+
+          with {:ok, session} <- GoTrue.sign_in_with_otp(client, params) do
+            do_login(client, conn, session, params)
           end
         end
 
-        defp do_login(conn, session, params) do
+        defp do_login(%Supabase.Client{} = client, conn, session, params) do
           user_return_to = get_session(conn, :user_return_to)
 
-          :ok = Supabase.Client.update_access_token(@client, session.access_token)
+          :ok = Supabase.Client.update_access_token(client, session.access_token)
 
           conn
           |> renew_session()
@@ -112,9 +128,10 @@ if Code.ensure_loaded?(Plug) do
         Logs out the user from the application, clearing session data
         """
         def log_out_user(%Plug.Conn{} = conn, scope) do
+          {:ok, client} = @client.get_client()
           user_token = get_session(conn, :user_token)
           session = %Session{access_token: user_token}
-          user_token && Admin.sign_out(@client, session, scope)
+          user_token && Admin.sign_out(client, session, scope)
 
           live_socket_id = get_session(conn, :live_socket_id)
 
@@ -149,7 +166,9 @@ if Code.ensure_loaded?(Plug) do
         end
 
         defp fetch_user_from_session_token(user_token) do
-          case GoTrue.get_user(@client, %Session{access_token: user_token}) do
+          {:ok, client} = @client.get_client()
+
+          case GoTrue.get_user(client, %Session{access_token: user_token}) do
             {:ok, %User{} = user} -> user
             _ -> nil
           end

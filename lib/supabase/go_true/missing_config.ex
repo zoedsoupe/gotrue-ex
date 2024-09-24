@@ -10,6 +10,18 @@ defmodule Supabase.GoTrue.MissingConfig do
   end
 
   @impl true
+  def exception(key: :client, module: module) do
+    desc = get_missing_desc(:client, module)
+
+    message = """
+    The `:client` option need to be a module that implements the `Supabase.Client.Behaviour` behaviour.
+
+    #{desc}
+    """
+
+    %__MODULE__{message: message}
+  end
+
   def exception(key: :auth_module) do
     message = """
     You must set up the `:auth_module` option in your config.exs file. This should be the module that contains your authentication handler.
